@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
@@ -35,10 +36,20 @@ func addTask(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	// check empty title
+	if task.Title == "" {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	// check date format
+	_, err = time.Parse("20060102", task.Date)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	// temporary print var task
 	fmt.Println(task)
-	//artists[artist.ID] = artist
 
 	// open db
 	db, err := sql.Open("sqlite", DBFilePath)

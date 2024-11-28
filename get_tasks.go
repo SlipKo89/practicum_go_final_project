@@ -41,7 +41,7 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		//fmt.Println(task)
+		fmt.Println(task)
 		tasks = append(tasks, task)
 	}
 
@@ -59,6 +59,8 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	fmt.Println(resp)
 
 	// в заголовок записываем тип контента, у нас это данные в формате JSON
 	w.Header().Set("Content-Type", "application/json")
