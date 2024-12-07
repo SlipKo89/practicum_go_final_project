@@ -37,7 +37,6 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		//fmt.Println(task)
 		tasks = append(tasks, task)
 	}
 
@@ -77,7 +76,6 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 	// open db
 	db, err := sql.Open("sqlite", DBFilePath)
 	if err != nil {
-		//createJsonError(w, errors.New("Файл БД открыть не получается"))
 		createJsonError(w, "Файл БД открыть не получается")
 		return
 	}
@@ -87,14 +85,12 @@ func getTask(w http.ResponseWriter, r *http.Request) {
 	row := db.QueryRow("SELECT id, date, title, comment, repeat FROM scheduler WHERE id = :id", sql.Named("id", id))
 	err = row.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 	if err != nil {
-		//createJsonError(w, errors.New("Задача не найдена"))
 		createJsonError(w, "Задача не найдена")
 		return
 	}
 
 	resp, err := json.Marshal(task)
 	if err != nil {
-		//createJsonError(w, errors.New("Не прошла сериализация данных"))
 		createJsonError(w, "Не прошла сериализация данных")
 		return
 	}

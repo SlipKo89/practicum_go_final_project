@@ -10,6 +10,8 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+const time_format = "20060102"
+
 func fileServer(router *chi.Mux) {
 	root := "web"
 	fs := http.FileServer(http.Dir(root))

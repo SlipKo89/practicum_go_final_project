@@ -16,7 +16,6 @@ func doneTask(w http.ResponseWriter, r *http.Request) {
 	// open db
 	db, err := sql.Open("sqlite", DBFilePath)
 	if err != nil {
-		//createJsonError(w, errors.New("Файл БД открыть не получается"))
 		createJsonError(w, "Файл БД открыть не получается")
 		return
 	}
@@ -26,7 +25,6 @@ func doneTask(w http.ResponseWriter, r *http.Request) {
 	row := db.QueryRow("SELECT id, date, repeat FROM scheduler WHERE id = :id", sql.Named("id", id))
 	err = row.Scan(&task.ID, &task.Date, &task.Repeat)
 	if err != nil {
-		//createJsonError(w, errors.New("Задача не найдена"))
 		createJsonError(w, "Задача не найдена")
 		return
 	}
@@ -42,7 +40,6 @@ func doneTask(w http.ResponseWriter, r *http.Request) {
 		// получаем новую дату задачи при условии непустого repeat
 		resp, err := NextDate(time.Now(), task.Date, task.Repeat)
 		if err != nil {
-			//createJsonError(w, errors.New("Невозможно добавить задачу в БД"))
 			createJsonError(w, "Невозможно вычислить следующую дату")
 			return
 		}
@@ -51,7 +48,6 @@ func doneTask(w http.ResponseWriter, r *http.Request) {
 			sql.Named("id", task.ID),
 			sql.Named("date", resp))
 		if err != nil {
-			//createJsonError(w, errors.New("Невозможно добавить задачу в БД"))
 			createJsonError(w, "Невозможно обновить задачу в БД")
 			return
 		}

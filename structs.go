@@ -14,3 +14,8 @@ type Task struct {
 	Comment string `json:"comment",omitempty`
 	Repeat  string `json:"repeat",omitempty`
 }
+
+// create struct variable for create json
+type TaskRes struct {
+	ID string `json:"id"`
+}

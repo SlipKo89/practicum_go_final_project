@@ -6,14 +6,12 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"time"
 
 	_ "modernc.org/sqlite"
 )
 
 func editTask(w http.ResponseWriter, r *http.Request) {
-	// create temporary variable for store data from UI interface after deserialize
-	var task Task
+
 	// create temporary variable for store raw data from UI interface before serialize
 	var buf bytes.Buffer
 
@@ -25,10 +23,9 @@ func editTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// deserialize raw data to json and store to var task
-	if err = json.Unmarshal(buf.Bytes(), &task); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		createJsonError(w, "Ошибка десериализации json")
+	error_string := add_edit_task(buf)
+	if error_string != "" {
+		createJsonError(w, "Общие проверки не пройдены")
 		return
 	}
 
@@ -37,39 +34,9 @@ func editTask(w http.ResponseWriter, r *http.Request) {
 		createJsonError(w, "Не указан ID задачи")
 		return
 	} else {
-		_, err = strconv.Atoi(task.ID)
+		_, err := strconv.Atoi(task.ID)
 		if err != nil {
 			createJsonError(w, "ID задачи указан неверно")
-			return
-		}
-	}
-
-	// check exist title
-	if task.Title == "" {
-		createJsonError(w, "Не указан заголовок задачи")
-		return
-	}
-
-	// check date format
-	timeDate, err := time.Parse("20060102", task.Date)
-	if err != nil {
-		createJsonError(w, "Неверный формат date")
-		return
-	}
-
-	// check exist date
-	if task.Date == "" {
-		task.Date = time.Now().Format("20060201")
-	}
-
-	// set task date
-	duration := timeDate.Sub(time.Now())
-	if duration < 0 && task.Repeat == "" {
-		task.Date = time.Now().Format("20060201")
-	} else if duration < 0 && task.Repeat != "" {
-		task.Date, err = NextDate(time.Now(), task.Date, task.Repeat)
-		if err != nil {
-			createJsonError(w, "Неверный формат date")
 			return
 		}
 	}
@@ -91,7 +58,6 @@ func editTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// add new task in db
-	//fmt.Println("taskID", task.ID)
 	_, err = db.Exec("UPDATE scheduler SET date = :date, comment = :comment, title = :title, repeat = :repeat WHERE id = :id",
 		sql.Named("id", task.ID),
 		sql.Named("date", task.Date),
@@ -100,7 +66,6 @@ func editTask(w http.ResponseWriter, r *http.Request) {
 		sql.Named("repeat", task.Repeat))
 	if err != nil {
 		createJsonError(w, "Невозможно добавить задачу в БД")
-		//fmt.Println("Невозможно добавить задачу в БД", err)
 		return
 	}
 
