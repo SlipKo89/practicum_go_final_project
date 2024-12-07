@@ -50,7 +50,7 @@ func main() {
 	r.Get("/api/tasks", getTasks)
 	r.Get("/api/nextdate", getNextDate)
 	r.Post("/api/task/done", doneTask)
-	r.Delete("/api/task/done", removeTask)
+	r.Delete("/api/task", removeTask)
 	http.ListenAndServe(PortNum, r)
 	fmt.Println("Завершаем работу")
 
