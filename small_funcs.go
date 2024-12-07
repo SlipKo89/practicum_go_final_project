@@ -3,26 +3,14 @@ package main
 import (
 	"encoding/json"
 	"net/http"
-	"fmt"
 
 	_ "modernc.org/sqlite"
 )
 
-//type AddTaskError struct {
-//	Error error `json:"error"`
-//}
-
-type AddTaskErrorS struct {
-	Error string `json:"error"`
-}
-
-
 func createJsonError(w http.ResponseWriter, error_name string) {
-	var ErrorResult = AddTaskErrorS{
+	var ErrorResult = AddTaskError{
 		Error: error_name,
 	}
-
-	fmt.Println(ErrorResult.Error)
 
 	resp, err := json.Marshal(ErrorResult)
 	if err != nil {

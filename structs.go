@@ -19,3 +19,7 @@ type Task struct {
 type TaskRes struct {
 	ID string `json:"id"`
 }
+
+type AddTaskError struct {
+	Error string `json:"error"`
+}

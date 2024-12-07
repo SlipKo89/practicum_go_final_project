@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"time"
 
 	_ "modernc.org/sqlite"
 )
@@ -13,7 +12,6 @@ var DBFilePath = "scheduler.db"
 
 func exist_db() {
 	//try get DBFile path from env
-
 	if os.Getenv("TODO_DBFILE") != "" {
 		DBFilePath = os.Getenv("TODO_DBFILE")
 	}
@@ -28,19 +26,15 @@ func exist_db() {
 
 	// если install равен true, после открытия БД требуется выполнить
 	// sql-запрос с CREATE TABLE и CREATE INDEX
-	if install == true {
+	if install {
 		db, err := sql.Open("sqlite", DBFilePath)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 		defer db.Close()
-		db.SetMaxIdleConns(2)
-		db.SetMaxOpenConns(5)
-		db.SetConnMaxIdleTime(time.Minute * 5)
-		db.SetConnMaxLifetime(time.Hour)
 
-		_, err1 := db.Exec("CREATE TABLE scheduler (id	INTEGER NOT NULL UNIQUE, date INTEGER, title TEXT, comment	TEXT, repeat	TEXT, PRIMARY KEY(id AUTOINCREMENT))")
+		_, err1 := db.Exec("CREATE TABLE IF NOT EXISTS scheduler  (id	INTEGER NOT NULL UNIQUE, date INTEGER, title TEXT, comment	TEXT, repeat	TEXT, PRIMARY KEY(id AUTOINCREMENT))")
 
 		if err1 != nil {
 			fmt.Println(err1)

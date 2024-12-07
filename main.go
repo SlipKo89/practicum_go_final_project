@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	_ "modernc.org/sqlite"
@@ -27,22 +26,17 @@ func fileServer(router *chi.Mux) {
 }
 
 func main() {
-	//webDir := "/Users/slipko/Desktop/Golang_learning/practicum_learning/final_task/go_final_project/web"
 	//set default port number
 	PortNum := "7540"
 	//try get port number from env
-	if os.Getenv("TODO_PORT") != "" {
-		PortNum = os.Getenv("TODO_PORT")
+	if p := os.Getenv("TODO_PORT"); p != "" {
+		PortNum = p
 	}
 
 	exist_db()
 
 	fmt.Println("Запускаем сервер на порту:", PortNum)
 	PortNum = ":" + PortNum
-
-	// test NextDate
-	test, err := NextDate(time.Now(), "20241016", "y")
-	fmt.Println(test, err)
 
 	r := chi.NewRouter()
 	fileServer(r)
