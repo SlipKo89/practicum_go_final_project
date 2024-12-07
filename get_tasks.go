@@ -5,18 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 
 	_ "modernc.org/sqlite"
 )
 
-type TaskWithID struct {
-	Task
-	ID string `json:"id"`
-}
-
 func getTasks(w http.ResponseWriter, r *http.Request) {
 
-	tasks := make([]TaskWithID, 0)
+	tasks := make([]Task, 0)
 
 	db, err := sql.Open("sqlite", DBFilePath)
 	if err != nil {
@@ -33,7 +29,7 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	for rows.Next() {
-		task := TaskWithID{}
+		task := Task{}
 
 		err := rows.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
 		if err != nil {
@@ -41,11 +37,16 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Println(task)
+		//fmt.Println(task)
 		tasks = append(tasks, task)
 	}
 
-	tasksMap := make(map[string][]TaskWithID)
+	// Sort tasks in slice
+	sort.Slice(tasks, func(i, j int) bool {
+		return tasks[i].Date < tasks[j].Date
+	})
+
+	tasksMap := make(map[string][]Task)
 	tasksMap["tasks"] = append(tasks)
 
 	if err := rows.Err(); err != nil {
@@ -56,16 +57,49 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 	// сериализуем данные из слайса artists
 	resp, err := json.Marshal(tasksMap)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		createJsonError(w, "Ошибка сериализации")
 		return
 	}
-
-	fmt.Println(resp)
 
 	// в заголовок записываем тип контента, у нас это данные в формате JSON
 	w.Header().Set("Content-Type", "application/json")
 	// так как все успешно, то статус OK
 	w.WriteHeader(http.StatusOK)
 	// записываем сериализованные в JSON данные в тело ответа
+	w.Write(resp)
+}
+
+func getTask(w http.ResponseWriter, r *http.Request) {
+	id := r.FormValue("id")
+
+	var task Task
+
+	// open db
+	db, err := sql.Open("sqlite", DBFilePath)
+	if err != nil {
+		//createJsonError(w, errors.New("Файл БД открыть не получается"))
+		createJsonError(w, "Файл БД открыть не получается")
+		return
+	}
+	defer db.Close()
+
+	// make request to db for find task with id
+	row := db.QueryRow("SELECT id, date, title, comment, repeat FROM scheduler WHERE id = :id", sql.Named("id", id))
+	err = row.Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
+	if err != nil {
+		//createJsonError(w, errors.New("Задача не найдена"))
+		createJsonError(w, "Задача не найдена")
+		return
+	}
+
+	resp, err := json.Marshal(task)
+	if err != nil {
+		//createJsonError(w, errors.New("Не прошла сериализация данных"))
+		createJsonError(w, "Не прошла сериализация данных")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	w.Write(resp)
 }

@@ -4,30 +4,11 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	_ "modernc.org/sqlite"
 )
-
-/*
-	func NextDate(now time.Time, date string, repeat string) (string, error) {
-		if repeat == "" {
-			return "", errors.New("repeat field is empty")
-		}
-
-		repeatParams := strings.Split(repeat, " ")
-
-		if len(repeatParams) == 1 && repeatParams[0] == "y" {
-
-		}
-
-
-		if len(repeatParams) == 2 && repeatParams[0] == "d" && 0 < strconv.Atoi(repeatParams[1]) <= 400 {
-
-		}
-
-}
-*/
 
 func fileServer(router *chi.Mux) {
 	root := "web"
@@ -57,10 +38,20 @@ func main() {
 	fmt.Println("Запускаем сервер на порту:", PortNum)
 	PortNum = ":" + PortNum
 
+	// test NextDate
+	test, err := NextDate(time.Now(), "20241016", "y")
+	fmt.Println(test, err)
+
 	r := chi.NewRouter()
 	fileServer(r)
 	r.Post("/api/task", addTask)
-	r.Get("/api/task", getTasks)
+	r.Get("/api/task", getTask)
+	r.Put("/api/task", editTask)
+	r.Get("/api/tasks", getTasks)
+	r.Get("/api/nextdate", getNextDate)
+	r.Post("/api/task/done", doneTask)
+	r.Delete("/api/task/done", removeTask)
 	http.ListenAndServe(PortNum, r)
 	fmt.Println("Завершаем работу")
+
 }

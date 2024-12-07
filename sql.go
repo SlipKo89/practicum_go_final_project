@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"time"
 
 	_ "modernc.org/sqlite"
 )
@@ -34,8 +35,12 @@ func exist_db() {
 			return
 		}
 		defer db.Close()
+		db.SetMaxIdleConns(2)
+		db.SetMaxOpenConns(5)
+		db.SetConnMaxIdleTime(time.Minute * 5)
+		db.SetConnMaxLifetime(time.Hour)
 
-		_, err1 := db.Exec("CREATE TABLE IF NOT EXIST scheduler (id	INTEGER NOT NULL UNIQUE, date INTEGER, title TEXT, comment	TEXT, repeat	TEXT, PRIMARY KEY(id AUTOINCREMENT))")
+		_, err1 := db.Exec("CREATE TABLE scheduler (id	INTEGER NOT NULL UNIQUE, date INTEGER, title TEXT, comment	TEXT, repeat	TEXT, PRIMARY KEY(id AUTOINCREMENT))")
 
 		if err1 != nil {
 			fmt.Println(err1)
