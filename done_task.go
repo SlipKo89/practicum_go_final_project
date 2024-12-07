@@ -11,31 +11,22 @@ import (
 
 func doneTask(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("id")
-	var task Task
 
-	// open db
-	db, err := sql.Open("sqlite", DBFilePath)
-	if err != nil {
-		createJsonError(w, "Файл БД открыть не получается")
-		return
-	}
-	defer db.Close()
-
-	// make request to db for find task with id
-	row := db.QueryRow("SELECT id, date, repeat FROM scheduler WHERE id = :id", sql.Named("id", id))
-	err = row.Scan(&task.ID, &task.Date, &task.Repeat)
-	if err != nil {
-		createJsonError(w, "Задача не найдена")
+	// check exist id
+	error_status := check_exist_task(id)
+	if error_status != "" {
+		createJsonError(w, error_status)
 		return
 	}
 
 	// check repeat
 	if task.Repeat == "" {
-		_, err = db.Exec("DELETE FROM scheduler WHERE id = :id", sql.Named("id", id))
-		if err != nil {
-			createJsonError(w, "Ошибка удаления записи")
+		error_status = delete_task_from_db(id)
+		if error_status != "" {
+			createJsonError(w, error_status)
 			return
 		}
+
 	} else {
 		// получаем новую дату задачи при условии непустого repeat
 		resp, err := NextDate(time.Now(), task.Date, task.Repeat)
@@ -43,6 +34,15 @@ func doneTask(w http.ResponseWriter, r *http.Request) {
 			createJsonError(w, "Невозможно вычислить следующую дату")
 			return
 		}
+
+		// open db
+		db, err := sql.Open("sqlite", DBFilePath)
+		if err != nil {
+			createJsonError(w, "Файл БД открыть не получается")
+			return
+		}
+		defer db.Close()
+
 		// add new task in db
 		_, err = db.Exec("UPDATE scheduler SET date = :date WHERE id = :id",
 			sql.Named("id", task.ID),
