@@ -12,8 +12,8 @@ var DBFilePath = "scheduler.db"
 
 func exist_db() {
 	//try get DBFile path from env
-	if os.Getenv("TODO_DBFILE") != "" {
-		DBFilePath = os.Getenv("TODO_DBFILE")
+	if p := os.Getenv("TODO_DBFILE"); p != "" {
+		DBFilePath = p
 	}
 
 	//check db file exist
