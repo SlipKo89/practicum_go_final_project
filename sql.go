@@ -34,7 +34,7 @@ func exist_db() {
 		}
 		defer db.Close()
 
-		_, err1 := db.Exec("CREATE TABLE IF NOT EXISTS scheduler  (id	INTEGER NOT NULL UNIQUE, date INTEGER, title TEXT, comment	TEXT, repeat	TEXT, PRIMARY KEY(id AUTOINCREMENT))")
+		_, err1 := db.Exec("CREATE TABLE IF NOT EXISTS scheduler  (id	INTEGER NOT NULL UNIQUE, date INTEGER, title TEXT, comment	TEXT, repeat	TEXT(128), PRIMARY KEY(id AUTOINCREMENT))")
 
 		if err1 != nil {
 			fmt.Println(err1)
